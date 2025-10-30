@@ -1,82 +1,86 @@
-# Lightweight React Template for KAVIA
+# Ocean Notes - React
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+A lightweight notes application with a modern "Ocean Professional" theme. Create, edit, pin, delete, and search your notes. Data persists in the browser using localStorage.
 
 ## Features
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- Notes CRUD with minimal UI
+- Pinned notes appear first, then by recently updated
+- Search across titles and content
+- Accessible editor modal (role="dialog", aria-modal, ESC to close, basic focus trap)
+- Floating action button (FAB) for quick note creation
+- Theme toggle (light/dark) using CSS variables
+- Smooth transitions while respecting prefers-reduced-motion
+- Local persistence via localStorage (key: `notes_app_v1`)
+- Modular architecture with a pluggable storage provider
 
-## Getting Started
+## Run and Test
 
-In the project directory, you can run:
+- Development: `npm start`
+- Tests: `npm test`
+- Build: `npm run build`
 
-### `npm start`
+Open http://localhost:3000 after starting.
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Project Structure
 
-### `npm test`
+- src/App.js — Application shell using components + useNotes hook
+- src/styles/theme.css — Ocean Professional CSS variables and shared styles
+- src/components/
+  - Header.jsx — Title, search, theme toggle
+  - NoteCard.jsx — Note display with pin/edit/delete
+  - NoteEditorModal.jsx — Accessible modal for create/edit
+  - EmptyState.jsx — Shown when there are no notes
+  - FAB.jsx — Floating action button
+- src/hooks/useNotes.js — Notes state + CRUD + search + sorting
+- src/services/storage.js — Storage provider with default localStorage implementation
+- src/__tests__/NoteFlows.test.js — Core flows (create/edit/delete/pin/persist)
+- src/App.test.js — Smoke tests: header and FAB presence
 
-Launches the test runner in interactive watch mode.
+## Storage Provider
 
-### `npm run build`
+The storage provider is pluggable:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Public API:
+- listNotes(): Note[]
+- createNote(note): void
+- updateNote(id, patch): void
+- deleteNote(id): void
+- setNotes(notes): void
 
-## Customization
+Utilities:
+- setProvider(provider)
+- getProvider()
 
-### Colors
+Default provider uses localStorage. To swap with a backend, implement the same interface and call `setProvider(customProvider)` early in app initialization.
 
-The main brand colors are defined as CSS variables in `src/App.css`:
+## Note Model
 
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+```
+{
+  id: string,
+  title: string,
+  content: string,
+  updatedAt: number, // epoch ms
+  pinned: boolean
 }
 ```
 
-### Components
+Sorting order: pinned first, then by `updatedAt` descending.
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+## Accessibility
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+- Modal uses role="dialog", aria-modal="true", labelled by heading
+- ESC closes the modal
+- Focus is kept within the modal (basic focus trap)
+- Buttons have descriptive aria-labels
 
-## Learn More
+## Theme
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Ocean Professional palette via CSS variables (src/styles/theme.css). Theme toggle updates `data-theme` on the document element.
 
-### Code Splitting
+## Future Provider Swap Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Implement a provider that matches the storage interface in `src/services/storage.js`
+- Set it via `setProvider(newProvider)` prior to first render or in an initialization module
+- Ensure it handles all methods and that `setNotes` updates the source of truth
